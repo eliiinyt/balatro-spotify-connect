@@ -8,6 +8,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-binaries:
     name: Build Daemon (${{ matrix.target }})
@@ -69,6 +72,8 @@ jobs:
     name: Package Complete Mod (All Platforms)
     needs: build-binaries
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
