@@ -1,0 +1,16 @@
+
+daemon/target/
+daemon/Cargo.lock
+
+.spotify_cache/
+credentials.json
+spotify_config.json
+
+bin/*.exe
+bin/daemon-*
+!bin/.gitkeep
+
+.DS_Store
+Thumbs.db
+*.tmp
+*.mp4

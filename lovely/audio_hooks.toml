@@ -1,0 +1,30 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 20
+
+# Silencia la música vanilla de Balatro cuando Spotify Connect está activo y reproduciendo
+[[patches]]
+[patches.pattern]
+target = "functions/misc_functions.lua"
+pattern = "G.ARGS.push.desired_track = desired_track"
+position = "before"
+payload = '''
+if G.SPOTIFY and G.SPOTIFY.should_mute_vanilla and G.SPOTIFY.should_mute_vanilla() then
+    desired_track = ''
+end
+'''
+match_indent = true
+
+# Hook de actualización por frame para sincronizar el estado de Spotify y hooks de juego
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "modulate_sound(dt)"
+position = "after"
+payload = '''
+if G.SPOTIFY and G.SPOTIFY.update then
+    G.SPOTIFY.update(dt)
+end
+'''
+match_indent = true

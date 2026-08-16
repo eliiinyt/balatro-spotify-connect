@@ -1,0 +1,13 @@
+{
+  "id": "balatro-spotify-connect",
+  "name": "Balatro Spotify Connect",
+  "prefix": "spotify",
+  "author": [
+    "Elin"
+  ],
+  "description": "Native Spotify Connect player daemon with in-game HUD and contextual music playlists for Balatro.",
+  "priority": 10,
+  "main_file": "src/main.lua",
+  "badge_colour": "1DB954",
+  "version": "1.0.0"
+}
