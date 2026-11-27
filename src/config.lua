@@ -12,10 +12,50 @@ Config.defaults = {
     hud_x = 0.78,
     hud_y = 0.03,
     reactive_effects = true,
-    target_source = "auto"
+    target_source = "auto",
+    language = "es"
 }
 
 Config.current = {}
+
+-- UI language. Text in the code is English; SPOTIFY_T swaps it for the chosen language.
+Config.languages = { "en", "es" }
+Config.language_names = { "English", "Español" }
+Config.translations = {
+    es = {
+        ["Language"] = "Idioma",
+        ["Connect device: "] = "Dispositivo Connect: ",
+        ["Enable mod"] = "Activar Mod",
+        ["Mute Balatro music"] = "Silenciar música nativa de Balatro",
+        ["Show mini player on screen"] = "Mostrar Mini-Player en HUD",
+        ["Open player and settings (F8)"] = "Abrir Reproductor y Ajustes (F8)",
+        ["Unknown"] = "Desconocido",
+        ["Connected as: "] = "Conectado como: ",
+        ["Searching local network (mDNS)..."] = "Buscando en red local (mDNS)...",
+        ["No track playing"] = "No hay canción en reproducción",
+        ["< Previous"] = "< Anterior",
+        ["II Pause"] = "II Pausa",
+        ["> Play"] = "> Reproducir",
+        ["Next >"] = "Siguiente >",
+        ["Auto (active)"] = "Auto (Activo)",
+        ["Enable Spotify Connect player"] = "Activar reproductor Spotify Connect",
+        ["Mute Balatro music while Spotify plays"] = "Silenciar música nativa de Balatro al sonar Spotify",
+        ["Reactive audio effects (booster packs / pause)"] = "Efectos reactivos de audio (Booster Packs / Pausa)",
+        ["Source / media player"] = "Fuente / Reproductor Multimedia",
+        ["Show floating mini player on screen"] = "Mostrar Mini-Player flotante en HUD",
+        ["Player size (scale)"] = "Tamaño del HUD (Escala)",
+        ["Start Spotify service with Balatro"] = "Iniciar daemon automáticamente con Balatro",
+        ["Restart Spotify Connect service"] = "Reiniciar Servicio Spotify Connect",
+        ["Player"] = "Reproductor",
+        ["Settings"] = "Ajustes",
+    }
+}
+
+function SPOTIFY_T(text)
+    local lang = Config.current and Config.current.language or "es"
+    local dict = Config.translations[lang]
+    return (dict and dict[text]) or text
+end
 
 local function deep_copy(obj)
     if type(obj) ~= 'table' then return obj end
