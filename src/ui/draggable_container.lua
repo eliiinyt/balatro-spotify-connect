@@ -1,6 +1,11 @@
 -- Draggable UIBox container for Balatro HUD elements (based on BalaLib/SystemClock)
 local DraggableContainer = UIBox:extend()
 
+-- set_zoom/set_hover_state/etc. come from BalaLib; skip them when it is not installed
+local function ui_call(node, method, ...)
+    if node and type(node[method]) == "function" then return node[method](node, ...) end
+end
+
 function DraggableContainer:init(args)
     args = args or {}
     args.config = args.config or {}
@@ -56,11 +61,11 @@ function DraggableContainer:init(args)
     self.UIRoot:initialize_VT(true)
 
     self.zoom = (args.zoom ~= nil) and args.zoom or (args.config and args.config.zoom)
-    if self.zoom then self.UIRoot:set_zoom(true, true) end
+    if self.zoom then ui_call(self.UIRoot, "set_zoom", true, true) end
 
     if args.config.instance_type == 'POPUP' and not self.created_on_pause then
         self.created_on_pause = true
-        self.UIRoot:set_created_on_pause(true, true)
+        ui_call(self.UIRoot, "set_created_on_pause", true, true)
     end
 
     self.attention_text = 'SpotifyHUD'
@@ -77,7 +82,7 @@ function DraggableContainer:hover()
         self:juice_up(0.04, 0.02)
         play_sound('chips1', math.random() * 0.1 + 0.55, 0.15)
         if self.zoom then
-            self.UIRoot:set_hover_state(true, true)
+            ui_call(self.UIRoot, "set_hover_state", true, true)
         end
     end
     UIBox.hover(self)
@@ -85,21 +90,21 @@ end
 
 function DraggableContainer:stop_hover()
     if self.zoom then
-        self.UIRoot:set_hover_state(false, true)
+        ui_call(self.UIRoot, "set_hover_state", false, true)
     end
     UIBox.stop_hover(self)
 end
 
 function DraggableContainer:drag()
     if self.zoom then
-        self.UIRoot:set_drag_state(true, true)
+        ui_call(self.UIRoot, "set_drag_state", true, true)
     end
     UIBox.drag(self)
 end
 
 function DraggableContainer:stop_drag()
     if self.zoom then
-        self.UIRoot:set_drag_state(false, true)
+        ui_call(self.UIRoot, "set_drag_state", false, true)
     end
     UIBox.stop_drag(self)
     if G.SPOTIFY and G.SPOTIFY.config then
