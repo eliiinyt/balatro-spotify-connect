@@ -74,6 +74,26 @@ function ModalBrowser.init()
         end
     end
 
+    G.FUNCS.spotify_cycle_language = function(e)
+        local Config = G.SPOTIFY and G.SPOTIFY.config
+        if not Config then return end
+        Config.current.language = Config.languages[e.to_key] or "es"
+        Config.save()
+        play_sound('button', 1.0, 0.6)
+        -- Redraw with the new language, staying on whichever menu is open
+        G.E_MANAGER:add_event(Event({
+            blockable = false,
+            func = function()
+                if G.SPOTIFY.hud then G.SPOTIFY.hud.create_or_update(true) end
+                -- The mod-menu page picks up the new language the next time it is opened
+                if not (e.cycle_config and e.cycle_config.spotify_from_mod_menu) then
+                    ModalBrowser.open("settings")
+                end
+                return true
+            end
+        }))
+    end
+
     G.FUNCS.spotify_cycle_source = function(e)
         local detected = (G.SPOTIFY and G.SPOTIFY.state and G.SPOTIFY.state.available_sources) or { "auto" }
         local chosen = detected[e.to_key] or "auto"
@@ -116,12 +136,12 @@ local function create_tab_player()
     local track = state.current_track or {}
     local is_playing = state.is_playing or false
     local is_connected = state.connected or false
-    local username = sanitize_utf8(state.username or "Desconocido")
+    local username = sanitize_utf8(state.username or SPOTIFY_T("Unknown"))
 
-    local conn_text = is_connected and ("Conectado como: " .. username) or "Buscando en red local (mDNS)..."
+    local conn_text = is_connected and (SPOTIFY_T("Connected as: ") .. username) or SPOTIFY_T("Searching local network (mDNS)...")
     local conn_col = is_connected and SPOTIFY_GREEN or G.C.ORANGE
 
-    local track_title = sanitize_utf8(track.title or "No hay cancion en reproduccion")
+    local track_title = sanitize_utf8(track.title or SPOTIFY_T("No track playing"))
     local track_artist = sanitize_utf8(track.artist or "Balatro Spotify Sidecar")
     local track_album = sanitize_utf8(track.album or "")
 
@@ -197,25 +217,49 @@ local function create_tab_player()
                         n = G.UIT.C,
                         config = { align = "cm", padding = 0.05 },
                         nodes = {
-                            UIBox_button({ label = { "< Anterior" }, button = "spotify_hud_prev", colour = G.C.BLACK, minw = 1.8, minh = 0.6, scale = 0.35 })
+                            UIBox_button({ label = { SPOTIFY_T("< Previous") }, button = "spotify_hud_prev", colour = G.C.BLACK, minw = 1.8, minh = 0.6, scale = 0.35 })
                         }
                     },
                     {
                         n = G.UIT.C,
                         config = { align = "cm", padding = 0.05 },
                         nodes = {
-                            UIBox_button({ label = { is_playing and "II Pausa" or "> Reproducir" }, button = "spotify_hud_toggle", colour = is_playing and SPOTIFY_GREEN or G.C.ORANGE, minw = 2.2, minh = 0.6, scale = 0.4 })
+                            UIBox_button({ label = { is_playing and SPOTIFY_T("II Pause") or SPOTIFY_T("> Play") }, button = "spotify_hud_toggle", colour = is_playing and SPOTIFY_GREEN or G.C.ORANGE, minw = 2.2, minh = 0.6, scale = 0.4 })
                         }
                     },
                     {
                         n = G.UIT.C,
                         config = { align = "cm", padding = 0.05 },
                         nodes = {
-                            UIBox_button({ label = { "Siguiente >" }, button = "spotify_hud_next", colour = G.C.BLACK, minw = 1.8, minh = 0.6, scale = 0.35 })
+                            UIBox_button({ label = { SPOTIFY_T("Next >") }, button = "spotify_hud_next", colour = G.C.BLACK, minw = 1.8, minh = 0.6, scale = 0.35 })
                         }
                     }
                 }
             }
+        }
+    }
+end
+
+function ModalBrowser.language_row(from_mod_menu)
+    local Config = G.SPOTIFY and G.SPOTIFY.config
+    local current = 1
+    for i, code in ipairs(Config.languages) do
+        if code == (Config.current.language or "es") then current = i end
+    end
+    return {
+        n = G.UIT.R,
+        config = { align = "cm", padding = 0.05 },
+        nodes = {
+            create_option_cycle({
+                label = SPOTIFY_T("Language"),
+                scale = 0.8,
+                label_scale = 0.8 * 0.45,
+                w = 4.5,
+                options = Config.language_names,
+                current_option = current,
+                opt_callback = "spotify_cycle_language",
+                spotify_from_mod_menu = from_mod_menu or false
+            })
         }
     }
 end
@@ -229,7 +273,7 @@ local function create_tab_settings()
     local current_saved_source = config.target_source or "auto"
 
     for idx, src in ipairs(detected) do
-        local label = (src == "auto" and "Auto (Activo)") or src
+        local label = (src == "auto" and SPOTIFY_T("Auto (active)")) or src
         table.insert(source_options, label)
         if src == current_saved_source or (current_saved_source == "auto" and src == "auto") then
             current_opt_index = idx
@@ -244,12 +288,13 @@ local function create_tab_settings()
                 n = G.UIT.R,
                 config = { align = "cm", colour = SPOTIFY_DARK, r = 0.1, padding = 0.15, minw = 7.0 },
                 nodes = {
+                    ModalBrowser.language_row(),
                     {
                         n = G.UIT.R,
                         config = { align = "cm", padding = 0.05 },
                         nodes = {
                             create_toggle({
-                                label = "Activar reproductor Spotify Connect",
+                                label = SPOTIFY_T("Enable Spotify Connect player"),
                                 ref_table = config,
                                 ref_value = "enabled",
                                 callback = function() if G.SPOTIFY.config then G.SPOTIFY.config.save() end end
@@ -261,7 +306,7 @@ local function create_tab_settings()
                         config = { align = "cm", padding = 0.05 },
                         nodes = {
                             create_toggle({
-                                label = "Silenciar musica nativa de Balatro al sonar Spotify",
+                                label = SPOTIFY_T("Mute Balatro music while Spotify plays"),
                                 ref_table = config,
                                 ref_value = "mute_vanilla_music",
                                 callback = function() if G.SPOTIFY.config then G.SPOTIFY.config.save() end end
@@ -273,7 +318,7 @@ local function create_tab_settings()
                         config = { align = "cm", padding = 0.05 },
                         nodes = {
                             create_toggle({
-                                label = "Efectos reactivos de audio (Booster Packs / Pausa)",
+                                label = SPOTIFY_T("Reactive audio effects (booster packs / pause)"),
                                 ref_table = config,
                                 ref_value = "reactive_effects",
                                 callback = function() if G.SPOTIFY.config then G.SPOTIFY.config.save() end end
@@ -285,7 +330,7 @@ local function create_tab_settings()
                         config = { align = "cm", padding = 0.05 },
                         nodes = {
                             create_option_cycle({
-                                label = "Fuente / Reproductor Multimedia",
+                                label = SPOTIFY_T("Source / media player"),
                                 scale = 0.8,
                                 label_scale = 0.8 * 0.45,
                                 w = 4.5,
@@ -300,7 +345,7 @@ local function create_tab_settings()
                         config = { align = "cm", padding = 0.05 },
                         nodes = {
                             create_toggle({
-                                label = "Mostrar Mini-Player flotante en HUD",
+                                label = SPOTIFY_T("Show floating mini player on screen"),
                                 ref_table = config,
                                 ref_value = "hud_enabled",
                                 callback = function()
@@ -315,7 +360,7 @@ local function create_tab_settings()
                         config = { align = "cm", padding = 0.08 },
                         nodes = {
                             create_slider({
-                                label = "Tamaño del HUD (Escala)",
+                                label = SPOTIFY_T("Player size (scale)"),
                                 scale = 0.8,
                                 label_scale = 0.8 * 0.45,
                                 ref_table = config,
@@ -334,7 +379,7 @@ local function create_tab_settings()
                         config = { align = "cm", padding = 0.05 },
                         nodes = {
                             create_toggle({
-                                label = "Iniciar daemon automaticamente con Balatro",
+                                label = SPOTIFY_T("Start Spotify service with Balatro"),
                                 ref_table = config,
                                 ref_value = "auto_start_daemon",
                                 callback = function() if G.SPOTIFY.config then G.SPOTIFY.config.save() end end
@@ -346,7 +391,7 @@ local function create_tab_settings()
                         config = { align = "cm", padding = 0.1 },
                         nodes = {
                             UIBox_button({
-                                label = { "Reiniciar Servicio Spotify Connect" },
+                                label = { SPOTIFY_T("Restart Spotify Connect service") },
                                 button = "spotify_restart_daemon",
                                 colour = G.C.ORANGE,
                                 minw = 3.5,
@@ -361,16 +406,16 @@ local function create_tab_settings()
     }
 end
 
-function ModalBrowser.open()
+function ModalBrowser.open(start_tab)
     local tabs = {
         {
-            label = "Reproductor",
-            chosen = true,
+            label = SPOTIFY_T("Player"),
+            chosen = start_tab ~= "settings",
             tab_definition_function = create_tab_player
         },
         {
-            label = "Ajustes",
-            chosen = false,
+            label = SPOTIFY_T("Settings"),
+            chosen = start_tab == "settings",
             tab_definition_function = create_tab_settings
         }
     }

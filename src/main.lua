@@ -150,15 +150,16 @@ if SMODS.current_mod then
                     n = G.UIT.R,
                     config = { align = "cm", padding = 0.05 },
                     nodes = {
-                        { n = G.UIT.T, config = { text = "Dispositivo Connect: " .. (Config.current.device_name or "Balatro Deck Player"), scale = 0.3, colour = G.C.UI.TEXT_LIGHT } }
+                        { n = G.UIT.T, config = { text = SPOTIFY_T("Connect device: ") .. (Config.current.device_name or "Balatro Deck Player"), scale = 0.3, colour = G.C.UI.TEXT_LIGHT } }
                     }
                 },
+                ModalBrowser.language_row(true),
                 {
                     n = G.UIT.R,
                     config = { align = "cm", padding = 0.05 },
                     nodes = {
                         create_toggle({
-                            label = "Activar Mod",
+                            label = SPOTIFY_T("Enable mod"),
                             ref_table = Config.current,
                             ref_value = "enabled",
                             callback = Config.save
@@ -170,7 +171,7 @@ if SMODS.current_mod then
                     config = { align = "cm", padding = 0.05 },
                     nodes = {
                         create_toggle({
-                            label = "Silenciar música nativa de Balatro",
+                            label = SPOTIFY_T("Mute Balatro music"),
                             ref_table = Config.current,
                             ref_value = "mute_vanilla_music",
                             callback = Config.save
@@ -182,7 +183,7 @@ if SMODS.current_mod then
                     config = { align = "cm", padding = 0.05 },
                     nodes = {
                         create_toggle({
-                            label = "Mostrar Mini-Player en HUD",
+                            label = SPOTIFY_T("Show mini player on screen"),
                             ref_table = Config.current,
                             ref_value = "hud_enabled",
                             callback = function()
@@ -197,7 +198,7 @@ if SMODS.current_mod then
                     config = { align = "cm", padding = 0.1 },
                     nodes = {
                         UIBox_button({
-                            label = { "Abrir Reproductor y Ajustes (F8)" },
+                            label = { SPOTIFY_T("Open player and settings (F8)") },
                             button = "spotify_hud_open_menu",
                             colour = HEX("1DB954"),
                             minw = 3.5,

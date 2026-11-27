@@ -264,7 +264,7 @@ function HUDPlayer.create_definition()
     local is_connected = state.connected or false
     local scale = (G.SPOTIFY and G.SPOTIFY.config and G.SPOTIFY.config.current and G.SPOTIFY.config.current.hud_scale) or 1.0
 
-    local raw_title = track.title or "No track playing"
+    local raw_title = track.title or SPOTIFY_T("No track playing")
     local raw_artist = track.artist or "Balatro Deck Player"
 
     local is_cjk = has_cjk(raw_title) or has_cjk(raw_artist)
